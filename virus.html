@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corazón de Partículas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+<script>
+    let particles = [];
+    let heartPoints = [];
+
+    function setup() {
+        createCanvas(windowWidth, windowHeight);
+        noStroke();
+        fill(255, 0, 100);
+
+        let scale = 10; // Escalado de la forma del corazón
+
+        // Generamos los puntos del corazón
+        for (let t = 0; t < TWO_PI; t += 0.1) {
+            let x = 16 * pow(sin(t), 3);
+            let y = -(13 * cos(t) - 5 * cos(2*t) - 2 * cos(3*t) - cos(4*t));
+            heartPoints.push(createVector(x * scale + width / 2, y * scale + height / 2));
+        }
+
+        // Creamos las partículas fuera del lienzo
+        for (let i = 0; i < 200; i++) {
+            let angle = random(TWO_PI);
+            let radius = max(width, height);
+            let x = cos(angle) * radius + width / 2;
+            let y = sin(angle) * radius + height / 2;
+            let target = random(heartPoints); // Escoge un punto aleatorio del corazón como destino
+            particles.push(new Particle(x, y, target));
+        }
+    }
+
+    function draw() {
+        background(0, 20); // Estela
+
+        for (let p of particles) {
+            p.update();
+            p.show();
+        }
+    }
+
+    class Particle {
+        constructor(x, y, target) {
+            this.pos = createVector(x, y);
+            this.vel = p5.Vector.random2D().mult(random(2, 5)); // Velocidad inicial
+            this.acc = createVector(0, 0);
+            this.target = target;
+            this.size = random(3, 6);
+            this.color = color(255, 0, 100, 150);
+        }
+
+        update() {
+            // Atracción al punto objetivo
+            let attraction = p5.Vector.sub(this.target, this.pos);
+            attraction.setMag(0.5);
+
+            // Movimiento hacia el corazón
+            this.acc.add(attraction);
+            this.vel.add(this.acc);
+            this.pos.add(this.vel);
+            this.acc.mult(0);
+            this.vel.mult(0.95); // Fricción
+        }
+
+        show() {
+            fill(this.color);
+            ellipse(this.pos.x, this.pos.y, this.size);
+        }
+    }
+</script>
+</body>
+</html>
